@@ -21,7 +21,7 @@
         else {
             switch ($_GET["accion"]) { // TODO poner en una funcion
                 case "sesion":
-                    validar_sesion($connexion);
+                    validar_sesion();
                     break;
                 case "crear":
                     // Imprimir formulario registro
@@ -29,7 +29,7 @@
                     break;
                 case "registro":
                     // Validar que el usuario este ne la base de datos
-                    validar_registro($connexion);
+                    validar_registro();
                     break;
                 case "link":
                     // Muestra los links
@@ -37,11 +37,11 @@
                     break;
                     // Muestra en una tabla los usuarios con el mismo idioma a aprender
                 case "tabla":
-                    mostrar_tabla($connexion);
+                    mostrar_tabla();
                     break;
                     // Dar de baja el usuario logged
                 case "baixa":
-                    mostrar_baixa($connexion);
+                    mostrar_baixa();
                     break;
                     // Cerrar sesión
                 case "sortir":

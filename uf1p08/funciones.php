@@ -5,11 +5,12 @@
 /// TODO Hacer funcion comprobar connexion con exit()
 /// TODO Hacer una funcion check user con exit()
 /// TODO Usar encriptación para las contraseña de los usuarios
+/// TODO isset a todos los valores del formulario, pro si editan los requisitos
 
 // Conectarse a la base de datos
 function connexion() {
     // Obviando el error
-    return @mysqli_connect("localhost", "root", "", "li");
+    return @mysqli_connect("localhost", "root", "", "lingua");
 
 }
 function redireccionIndex() {
@@ -28,19 +29,28 @@ function bonton_return() {
 
 // Consulta que el email y la contraseña estén en la base de datos
 function query_lingua_usu(): string{
-    return "SELECT * FROM usuaris where (email = '".$_POST["correo"]."') and (password = '".$_POST["contra"]."');";
+    return "SELECT email, nom, idioma_aprendre
+            FROM usuaris
+            WHERE (email = '".$_POST["correo"]."') and (password = '".md5($_POST["contra"])."');";
 }
 // Añade a la base de datos un nuevo usuario
 function query_insert_usu(): string{
-    return "INSERT INTO usuaris VALUES ('".$_POST["correo"]."', '".$_POST["contra"]."', '".$_POST["nombre"]."', '".$_POST["idioma_natiu"]."', '".$_POST["idioma_aprendre"]."')";
+    return "INSERT INTO usuaris 
+            VALUES ('".$_POST["correo"]."', '".md5($_POST["contra"])."', '".$_POST["nombre"]."', '".$_POST["idioma_natiu"]."', '".$_POST["idioma_aprendre"]."')";
 }
 // Consultamos los usuarios con el mismo idioma a aprender
 function query_mostrar_aprender(): string{
-    return "SELECT * FROM usuaris WHERE (idioma_aprendre = '".$_SESSION["idioma_aprendre"]."') and (email != '".$_SESSION["correo"]."');";
+    return "SELECT u.email, u.nom, ina.nom AS i_natiu , iap.nom AS i_aprendre
+            FROM (usuaris AS u INNER JOIN idiomes AS ina ON u.idioma_natiu = ina.id) INNER JOIN idiomes AS iap ON u.idioma_aprendre = iap.id
+            WHERE (iap.id = ".$_SESSION["idioma_aprendre"].") and (u.email != '".$_SESSION["correo"]."');";
 }
 // Consulta para eliminar el usuario
 function query_delete_usu(): string{
     return "DELETE FROM usuaris where email = '".$_SESSION["correo"]."'";
+}
+// Consulta idiomes
+function query_idiomas(): string {
+    return "SELECT id, nom FROM idiomes";
 }
 
 
@@ -119,10 +129,21 @@ function form_mid_create() {
 }
 // Opciones idiomas formulario registro
 function form_mid_create_options() {
-    print '<option value="Espanyol">Espanyol</option>';
-    print '<option value="Anglès">Anglès</option>';
-    print '<option value="Francès">Francès</option>';
-    print '<option value="Alemany">Alemany</option>';
+    $connexion = connexion();
+    $sql = query_idiomas();
+    // Nos comemos el error
+    $consulta = @mysqli_query($connexion, $sql);
+    if ($consulta) {
+        $numlinies = mysqli_num_rows($consulta);
+        for ($i = 0; $i < $numlinies; $i++) {
+            $linia = mysqli_fetch_assoc($consulta);
+            print '<option value="'.$linia["id"].'">'.$linia["nom"].'</option>';
+        }
+    }
+//    else {
+//        print '<option value="1">Español</option>';
+//    }
+
 }
 // Footer formulario
 function form_bottom() {
@@ -142,7 +163,8 @@ function form_bottom() {
 //// Validar
 
 // Validamos la sesión con una consulta y if
-function validar_sesion($connexion) {
+function validar_sesion() {
+    $connexion = connexion();
     $sql = query_lingua_usu();
     $consulta = mysqli_query($connexion, $sql);
     if (!$consulta) {
@@ -170,7 +192,8 @@ function validar_sesion($connexion) {
     }
 }
 // Validamos el registro de usuario con consulta y if
-function validar_registro($connexion) {
+function validar_registro() {
+    $connexion = connexion();
     // Formulario registro enviado
     $sql = query_insert_usu();
     $consulta = mysqli_query($connexion, $sql);
@@ -190,7 +213,8 @@ function validar_registro($connexion) {
 
 // Muestra por pantalla que no esta registrado mas un redirect
 function mostrar_no_validado() {
-
+    print "Usuario no logueado";
+    redireccionIndex();
 }
 // Muestra el header de html
 function mostrar_header() {
@@ -234,7 +258,8 @@ function mostrar_links() {
     }
 }
 // Muestra la tabla idiomas
-function mostrar_tabla($connexion) {
+function mostrar_tabla() {
+    $connexion = connexion();
     if (!isset($_SESSION["correo"])) {
         mostrar_no_validado();
     }
@@ -262,8 +287,8 @@ function mostrar_tabla($connexion) {
                     print "<tr class='bordes'>";
                     print "<td class='bordes'>" . $linia["nom"] . "</td>";
                     print "<td class='bordes'>" . $linia["email"] . "</td>";
-                    print "<td class='bordes'>" . $linia["idioma_natiu"] . "</td>";
-                    print "<td class='bordes'>" . $linia["idioma_aprendre"] . "</td>";
+                    print "<td class='bordes'>" . $linia["i_natiu"] . "</td>";
+                    print "<td class='bordes'>" . $linia["i_aprendre"] . "</td>";
                     print "</tr>";
                 }
                 print "</table>";
@@ -273,7 +298,8 @@ function mostrar_tabla($connexion) {
     }
 }
 // Muestra la confirmación de baixa de la base de datos
-function mostrar_baixa($connexion) {
+function mostrar_baixa() {
+    $connexion = connexion();
     if (!isset($_SESSION["correo"])) {
         mostrar_no_validado();
     }
