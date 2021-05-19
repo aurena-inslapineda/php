@@ -4,7 +4,6 @@
 /// TODO Cambiar cuando hacemos referencia index.php a una variable
 /// TODO Hacer funcion comprobar connexion con exit()
 /// TODO Hacer una funcion check user con exit()
-/// TODO Usar encriptación para las contraseña de los usuarios
 /// TODO isset a todos los valores del formulario, pro si editan los requisitos
 
 // Conectarse a la base de datos
