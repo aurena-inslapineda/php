@@ -1,5 +1,5 @@
 <?php
-
+    // Prueba del codespaces
     include_once("funciones.php");
 
     // debug =t rue ... outputs debugging information
